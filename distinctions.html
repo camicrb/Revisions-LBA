@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distinctions LBA — Ne plus confondre</title>
+<style>
+:root {
+  --primary: #1a3a5c; --accent: #2e86c1; --success: #1e8449;
+  --danger: #c0392b; --warning: #d68910; --light: #f4f6f8;
+  --border: #d5d8dc; --text: #2c3e50; --muted: #7f8c8d; --white: #fff;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: var(--light); color: var(--text); min-height: 100vh; }
+
+.header { background: linear-gradient(135deg, var(--primary), var(--accent));
+          color: white; padding: 16px 20px; text-align: center; }
+.header h1 { font-size: 1.1rem; font-weight: 800; }
+.header p  { font-size: .78rem; opacity: .85; margin-top: 3px; }
+
+/* Module nav */
+.mod-nav { display: flex; gap: 6px; padding: 12px 14px; overflow-x: auto;
+           background: white; border-bottom: 1px solid var(--border);
+           scrollbar-width: none; }
+.mod-nav::-webkit-scrollbar { display: none; }
+.mod-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; border: none;
+           font-size: .78rem; font-weight: 700; cursor: pointer;
+           transition: all .2s; opacity: .5; }
+.mod-btn.active { opacity: 1; color: white; }
+
+/* Content */
+.content { max-width: 680px; margin: 0 auto; padding: 16px 14px 60px; }
+.module-section { display: none; }
+.module-section.active { display: block; animation: fadeIn .25s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+.mod-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
+.mod-sub   { font-size: .8rem; color: var(--muted); margin-bottom: 18px; }
+.count-badge { display: inline-block; background: var(--accent); color: white;
+               font-size: .7rem; font-weight: 700; padding: 2px 8px;
+               border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+
+/* Distinction card */
+.dist-card { background: white; border-radius: var(--radius);
+             box-shadow: 0 2px 8px rgba(0,0,0,.08);
+             margin-bottom: 14px; overflow: hidden; cursor: pointer;
+             transition: box-shadow .2s; }
+.dist-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.13); }
+
+.card-question { padding: 16px 18px; display: flex; align-items: center; gap: 12px; }
+.vs-pill { background: var(--light); border: 1.5px solid var(--border);
+           border-radius: 20px; padding: 3px 10px; font-size: .72rem;
+           font-weight: 800; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+.concepts { display: flex; align-items: center; gap: 10px; flex: 1; flex-wrap: wrap; }
+.concept-a { font-weight: 800; font-size: .9rem; }
+.concept-b { font-weight: 800; font-size: .9rem; }
+.sep { font-size: .8rem; color: var(--muted); font-weight: 400; }
+.reveal-hint { font-size: .72rem; color: var(--muted); margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+
+.card-answer { display: none; border-top: 1.5px solid var(--border);
+               padding: 0; }
+.dist-card.open .card-answer { display: block; }
+.dist-card.open .reveal-hint { display: none; }
+
+/* Answer columns */
+.answer-cols { display: grid; grid-template-columns: 1fr 1fr; }
+.col-a { padding: 14px 14px 14px 18px; border-right: 1px solid var(--border); }
+.col-b { padding: 14px 18px 14px 14px; }
+.col-header { font-size: .7rem; font-weight: 800; text-transform: uppercase;
+              letter-spacing: .8px; margin-bottom: 8px; }
+.col-item { font-size: .82rem; line-height: 1.45; margin-bottom: 5px;
+            padding-left: 10px; position: relative; }
+.col-item::before { content: '›'; position: absolute; left: 0; font-weight: 700; }
+
+.key-diff { background: #fff9e6; border-radius: 8px; padding: 10px 14px;
+            margin: 0 14px 14px; font-size: .82rem; line-height: 1.45; }
+.key-diff strong { color: var(--warning); }
+
+/* Progress bar */
+.progress-bar { position: fixed; bottom: 0; left: 0; right: 0;
+                background: white; border-top: 1px solid var(--border);
+                padding: 10px 20px; display: flex; align-items: center;
+                gap: 12px; font-size: .8rem; color: var(--muted); }
+.prog-fill-wrap { flex: 1; height: 6px; background: var(--border);
+                   border-radius: 3px; overflow: hidden; }
+.prog-fill { height: 100%; background: var(--accent); border-radius: 3px;
+             transition: width .3s; }
+
+/* Colors per module */
+.m1{color:#C0392B;} .m2{color:#7B241C;} .m3{color:#154360;} .m4{color:#145A32;}
+.m5{color:#6C3483;} .m6{color:#935116;} .m7{color:#0E6655;} .m8{color:#784212;}
+.m9{color:#117A65;} .m10{color:#212F3D;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚡ Ne plus confondre — Distinctions LBA</h1>
+  <p>Clique sur chaque carte pour révéler les différences clés</p>
+</div>
+
+<div class="mod-nav" id="mod-nav">
+  <button class="mod-btn active" style="background:#C0392B" onclick="showMod(1)">M1</button>
+  <button class="mod-btn" style="background:#7B241C" onclick="showMod(2)">M2</button>
+  <button class="mod-btn" style="background:#154360" onclick="showMod(3)">M3</button>
+  <button class="mod-btn" style="background:#145A32" onclick="showMod(4)">M4</button>
+  <button class="mod-btn" style="background:#6C3483" onclick="showMod(5)">M5</button>
+  <button class="mod-btn" style="background:#935116" onclick="showMod(6)">M6</button>
+  <button class="mod-btn" style="background:#0E6655" onclick="showMod(7)">M7</button>
+  <button class="mod-btn" style="background:#784212" onclick="showMod(8)">M8</button>
+  <button class="mod-btn" style="background:#117A65" onclick="showMod(9)">M9</button>
+  <button class="mod-btn" style="background:#212F3D" onclick="showMod(10)">M10</button>
+</div>
+
+<div class="content">
+
+<!-- ══ M1 ══ -->
+<div class="module-section active" id="mod-1">
+  <div class="mod-title m1">Module 1 — Responsabilité pénale</div>
+  <div class="mod-sub">Les distinctions essentielles à ne pas confondre à l'examen</div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m1">Art. 305bis CP</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m1">Art. 305ter CP</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m1">Art. 305bis — Blanchiment</div>
+          <div class="col-item">Infraction <strong>intentionnelle</strong> (dol direct ou éventuel)</div>
+          <div class="col-item">Peine : jusqu'à <strong>3 ans</strong> (simple) / <strong>5 ans</strong> (aggravé)</div>
+          <div class="col-item">Vise l'acte d'<strong>entraver la confiscation</strong></div>
+          <div class="col-item">Auteur = celui qui blanchit</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m1">Art. 305ter — Carences</div>
+          <div class="col-item">Infraction de <strong>négligence</strong> possible</div>
+          <div class="col-item">Peine : jusqu'à <strong>1 an</strong></div>
+          <div class="col-item">Vise le <strong>manque de vigilance</strong> de l'IF</div>
+          <div class="col-item">Donne aussi un <strong>droit facultatif</strong> de communiquer (al. 2)</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> 305bis = le criminel qui blanchit. 305ter = l'IF qui ne surveille pas assez. La négligence peut suffire pour 305ter, jamais pour 305bis.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m1">Art. 102 al. 1 CP</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m1">Art. 102 al. 2 CP</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m1">Al. 1 — Responsabilité subsidiaire</div>
+          <div class="col-item">Requiert un <strong>employé identifiable</strong> qui a commis l'infraction</div>
+          <div class="col-item">L'entreprise répond <strong>en plus</strong> de l'individu</div>
+          <div class="col-item">Amende jusqu'à <strong>5 millions CHF</strong></div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m1">Al. 2 — Responsabilité primaire</div>
+          <div class="col-item"><strong>Aucun individu identifiable</strong> requis</div>
+          <div class="col-item">Suffit que le <strong>défaut d'organisation</strong> ait rendu l'infraction possible</div>
+          <div class="col-item">L'entreprise seule est condamnée</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Al. 2 = plus sévère — même sans coupable individuel, l'entreprise peut être condamnée si ses procédures internes étaient insuffisantes.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m1">Dol direct</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m1">Dol éventuel</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m1">Dol direct</div>
+          <div class="col-item">L'auteur <strong>sait</strong> que les fonds sont criminels</div>
+          <div class="col-item">Il <strong>veut</strong> commettre l'infraction</div>
+          <div class="col-item">Certitude dans l'esprit de l'auteur</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m1">Dol éventuel (suffit !)</div>
+          <div class="col-item">L'auteur <strong>accepte l'éventualité</strong> que les fonds soient criminels</div>
+          <div class="col-item">"Je ne sais pas si c'est criminel, mais je m'en fiche"</div>
+          <div class="col-item">= "Wilful blindness" — <strong>suffit pour condamner</strong></div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Pas besoin de certitude pour le blanchiment. Accepter l'éventualité = condamnable. C'est pour ça que "je ne savais pas" n'est souvent pas une défense valable.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m1">Sanction FINMA</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m1">Sanction pénale</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m1">Sanction FINMA (administrative)</div>
+          <div class="col-item">Constat de violation, interdiction d'exercer (art. 33 LFINMA)</div>
+          <div class="col-item">Confiscation des gains (art. 35 LFINMA)</div>
+          <div class="col-item">But : <strong>protection des marchés</strong></div>
+          <div class="col-item">Procédure <strong>administrative</strong></div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m1">Sanction pénale</div>
+          <div class="col-item">Peine privative de liberté / pécuniaire</div>
+          <div class="col-item">Casier judiciaire</div>
+          <div class="col-item">But : <strong>punir le criminel</strong></div>
+          <div class="col-item">Procédure <strong>pénale</strong> (MPC ou cantons)</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Les deux peuvent s'appliquer simultanément pour les mêmes faits — pas de violation du ne bis in idem (arrêt CEDH A et B c. Norvège 2016).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ M2 ══ -->
+<div class="module-section" id="mod-2">
+  <div class="mod-title m2">Module 2 — Blanchiment d'argent CP</div>
+  <div class="mod-sub">Infractions, phases et notions proches</div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m2">Blanchiment (305bis)</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m2">Recel (160 CP)</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m2">Blanchiment — art. 305bis</div>
+          <div class="col-item">Bien juridique protégé : <strong>bonne administration de la justice / confiscation</strong></div>
+          <div class="col-item">Vise à empêcher l'État de <strong>saisir les fonds</strong></div>
+          <div class="col-item">Requiert un <strong>crime préalable</strong></div>
+          <div class="col-item">Acte : entraver, dissimuler l'origine</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m2">Recel — art. 160</div>
+          <div class="col-item">Bien juridique protégé : <strong>droit de propriété</strong></div>
+          <div class="col-item">Vise à soustraire le bien à son <strong>propriétaire légitime</strong></div>
+          <div class="col-item">Requiert un <strong>crime contre la propriété</strong> (vol, escroquerie…)</div>
+          <div class="col-item">Acte : acquérir, recevoir, cacher le bien</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Blanchiment = contre l'État (confiscation). Recel = contre le propriétaire. Les deux peuvent entrer en concours.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m2">Crime préalable</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m2">Délit préalable</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m2">Crime — peine &gt; 3 ans</div>
+          <div class="col-item">Trafic de drogue, corruption, organisation criminelle, abus de confiance aggravé…</div>
+          <div class="col-item"><strong>Peut fonder</strong> un blanchiment (art. 305bis)</div>
+          <div class="col-item">Depuis 2016 : délit fiscal qualifié (<strong>CHF 300'000+</strong> soustraits + usage de faux)</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m2">Délit — peine ≤ 3 ans</div>
+          <div class="col-item">Vol simple, escroquerie simple…</div>
+          <div class="col-item"><strong>Ne peut PAS</strong> fonder un blanchiment</div>
+          <div class="col-item">Exception : escroquerie fiscale qualifiée</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé à l'examen :</strong> "On ne blanchit que le produit d'un CRIME, pas d'un simple délit." C'est la distinction fondamentale du M2.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m2">Placement</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m2">Empilage</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m2">Intégration</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m2">1. Placement</div>
+          <div class="col-item">Introduction des fonds dans le système financier</div>
+          <div class="col-item">Ex : dépôt de cash, change de monnaie</div>
+          <div class="col-item">Phase la <strong>plus visible</strong></div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m2">2. Empilage (Layering)</div>
+          <div class="col-item">Multiplication des transactions pour brouiller les pistes</div>
+          <div class="col-item">Ex : virements en cascade, sociétés écrans</div>
+          <div class="col-item">Phase la <strong>plus difficile à détecter</strong></div>
+        </div>
+      </div>
+      <div class="key-diff">3. <strong>Intégration</strong> : réintroduction dans l'économie légale (achat immobilier, investissements). Les fonds paraissent légaux. Moyen mnémotechnique : <strong>P.E.I.</strong></div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m2">Délit fiscal qualifié</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m2">Escroquerie fiscale</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m2">Délit fiscal qualifié</div>
+          <div class="col-item">Soustraction d'impôts ≥ <strong>CHF 300'000</strong> par période fiscale</div>
+          <div class="col-item"><strong>Usage de faux</strong> (faux documents)</div>
+          <div class="col-item">Crime préalable au blanchiment <strong>depuis 2016</strong></div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m2">Escroquerie fiscale</div>
+          <div class="col-item">Pas de seuil de montant</div>
+          <div class="col-item">Usage de <strong>titres falsifiés</strong> (documents officiels)</div>
+          <div class="col-item">Crime préalable au blanchiment (anciennement)</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Le délit fiscal qualifié est le grand ajout de 2016 — c'est la porte d'entrée de la fraude fiscale dans le blanchiment suisse.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ M3 ══ -->
+<div class="module-section" id="mod-3">
+  <div class="mod-title m3">Module 3 — Organisation de l'IF</div>
+  <div class="mod-sub">Rôles, lignes de défense, responsabilités</div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m3">1ère ligne</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m3">2ème ligne</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m3">3ème ligne</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m3">1ère ligne — Front office</div>
+          <div class="col-item">Responsable au <strong>quotidien</strong></div>
+          <div class="col-item">Connaît le client, détecte les red flags</div>
+          <div class="col-item"><strong>Ne délègue pas</strong> sa responsabilité à la compliance</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m3">2ème ligne — Compliance / Risk</div>
+          <div class="col-item"><strong>Surveille, contrôle, conseille</strong></div>
+          <div class="col-item">Définit les politiques LBA</div>
+          <div class="col-item">MLRO = chef de la compliance LBA</div>
+        </div>
+      </div>
+      <div class="key-diff"><strong>3ème ligne — Audit interne :</strong> vérifie que les deux premières lignes fonctionnent correctement. Indépendant de toute opération. 💡 <strong>Erreur fréquente :</strong> croire que la 2ème ligne assume la responsabilité de la 1ère.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m3">Délégation de tâches</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m3">Délégation de responsabilité</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m3">Délégation de tâches ✅</div>
+          <div class="col-item"><strong>Possible</strong> — un IF peut confier l'exécution de tâches LBA à un prestataire externe</div>
+          <div class="col-item">Ex : externaliser le screening sanctions, le KYC d'entrée</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m3">Délégation de responsabilité ❌</div>
+          <div class="col-item"><strong>Impossible</strong> — la responsabilité finale reste toujours avec l'IF</div>
+          <div class="col-item">Si le prestataire fait une erreur, c'est l'IF qui est sanctionné</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> "On peut déléguer l'exécution, jamais la responsabilité." C'est un principe fondamental du droit de la surveillance financière suisse.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m3">Surveillance directe FINMA</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m3">Surveillance via OAR</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m3">Surveillance directe FINMA</div>
+          <div class="col-item">Banques, assurances, bourses</div>
+          <div class="col-item">5 catégories de surveillance (1 = plus grande)</div>
+          <div class="col-item">Contrôle direct, inspections FINMA</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m3">Via OAR (Organisme d'autorégulation)</div>
+          <div class="col-item">GFI, gérants de patrimoine, fiduciaires</div>
+          <div class="col-item">OAR surveille pour le compte de la FINMA</div>
+          <div class="col-item">Obligations LBA <strong>identiques</strong> (même si superviseur différent)</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Le superviseur change (FINMA vs OAR), les obligations LBA restent les mêmes pour tout le monde.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ M4 ══ -->
+<div class="module-section" id="mod-4">
+  <div class="mod-title m4">Module 4 — Gestion des risques / KYC</div>
+  <div class="mod-sub">Identification, vérification, diligences</div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m4">Diligences simplifiées</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m4">Diligences renforcées</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m4">Simplifiées — risque faible</div>
+          <div class="col-item">Client institutionnel coté, produit à faible risque</div>
+          <div class="col-item">Ex : société cotée sur bourse reconnue</div>
+          <div class="col-item">Allègements possibles sur l'identification ADE</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m4">Renforcées — risque élevé</div>
+          <div class="col-item">PEP, pays à risque, structure complexe, montants élevés</div>
+          <div class="col-item">Approbation senior management requise</div>
+          <div class="col-item">Clarifications approfondies sur l'origine des fonds</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Les diligences <strong>standard</strong> (au milieu) s'appliquent par défaut. Simplifiées et renforcées sont les exceptions — dans les deux cas il faut documenter pourquoi.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m4">Cocontractant</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m4">Ayant droit économique (ADE)</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m4">Cocontractant</div>
+          <div class="col-item">Celui qui <strong>signe le contrat</strong> avec la banque</div>
+          <div class="col-item">Peut être une personne morale ou physique</div>
+          <div class="col-item">Identifié via art. 3 LBA</div>
+          <div class="col-item">Pas forcément le bénéficiaire réel</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m4">Ayant droit économique (ADE)</div>
+          <div class="col-item">Celui qui <strong>bénéficie réellement</strong> des actifs</div>
+          <div class="col-item">Toujours une <strong>personne physique</strong></div>
+          <div class="col-item">Identifié via art. 4 LBA + CDB 20</div>
+          <div class="col-item">Seuil : ≥ 25% de participation</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Une SA peut être cocontractante, mais derrière il y a toujours une personne physique ADE. La banque doit identifier les deux.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m4">Risque inhérent</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m4">Risque résiduel</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m4">Risque inhérent</div>
+          <div class="col-item">Risque <strong>brut</strong>, sans aucun contrôle</div>
+          <div class="col-item">Lié à la nature du client, produit, géographie</div>
+          <div class="col-item">Point de départ de l'analyse</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m4">Risque résiduel</div>
+          <div class="col-item">Risque <strong>après</strong> application des contrôles</div>
+          <div class="col-item">= Risque inhérent − efficacité des contrôles</div>
+          <div class="col-item">C'est ce risque que la FINMA évalue</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Un produit à risque inhérent élevé peut avoir un risque résiduel acceptable si les contrôles sont très robustes. L'ABR vise à réduire le risque résiduel.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ M5 ══ -->
+<div class="module-section" id="mod-5">
+  <div class="mod-title m5">Module 5 — Structures complexes</div>
+  <div class="mod-sub">Formulaires CDB, trusts, structures opaques</div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m5">Formulaire A</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m5">Formulaire K</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m5">Formulaire S</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m5">Formulaire A</div>
+          <div class="col-item">L'ADE est une <strong>personne physique tierce</strong></div>
+          <div class="col-item">Le cocontractant agit pour quelqu'un d'autre</div>
+          <div class="col-item">Ex : mandataire, nominee, prête-nom</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m5">Formulaire K</div>
+          <div class="col-item">La <strong>société opérationnelle</strong> est son propre ADE</div>
+          <div class="col-item">Elle agit pour elle-même, aucun tiers bénéficiaire</div>
+          <div class="col-item">Ex : SA cotée, entreprise active</div>
+        </div>
+      </div>
+      <div class="key-diff"><strong>Formulaire S :</strong> pour les <strong>trusts et structures fiduciaires</strong> (toutes juridictions — trust anglais, Anstalt liechtensteinois, fondation privée). On identifie le settlor, trustee, bénéficiaires.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m5">Trust révocable</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m5">Trust irrévocable</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m5">Trust révocable</div>
+          <div class="col-item">Le settlor peut <strong>reprendre les actifs</strong> à tout moment</div>
+          <div class="col-item">Settlor = généralement toujours ADE</div>
+          <div class="col-item">Protection patrimoniale <strong>limitée</strong></div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m5">Trust irrévocable</div>
+          <div class="col-item">Le settlor <strong>perd le contrôle</strong> des actifs</div>
+          <div class="col-item">ADE = les bénéficiaires (ou catégorie de bénéficiaires)</div>
+          <div class="col-item">Protection patrimoniale <strong>forte</strong></div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Dans un trust irrévocable discrétionnaire, identifier l'ADE est complexe — on identifie la classe de bénéficiaires + le protecteur.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ M6 ══ -->
+<div class="module-section" id="mod-6">
+  <div class="mod-title m6">Module 6 — Analyse du risque</div>
+  <div class="mod-sub">GAFI, facteurs de risque, évaluation</div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m6">Liste noire GAFI</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m6">Liste grise GAFI</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m6">Liste noire — Call for Action</div>
+          <div class="col-item">Pays à <strong>risque très élevé</strong></div>
+          <div class="col-item">Actuellement : <strong>Corée du Nord, Iran</strong></div>
+          <div class="col-item">Diligences renforcées <strong>automatiques</strong> — quasi-interdiction</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m6">Liste grise — Increased Monitoring</div>
+          <div class="col-item">Pays sous <strong>surveillance accrue</strong> du GAFI</div>
+          <div class="col-item">Nombreux pays — ex : Émirats, Turquie, Panama…</div>
+          <div class="col-item">Diligences renforcées <strong>proportionnelles</strong> au risque</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Noire ≠ Grise en intensité. Les deux imposent des diligences renforcées mais de niveau différent. Connaître les 2 pays de la liste noire par cœur.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m6">Blanchiment d'argent</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m6">Financement du terrorisme</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m6">Blanchiment d'argent</div>
+          <div class="col-item">Fonds d'origine <strong>criminelle</strong> → légalisation</div>
+          <div class="col-item">Montants généralement <strong>élevés</strong></div>
+          <div class="col-item">Flux : du crime vers l'économie légale</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m6">Financement du terrorisme</div>
+          <div class="col-item">Fonds souvent d'origine <strong>légale</strong> (donations, salaires)</div>
+          <div class="col-item">Montants souvent <strong>faibles</strong></div>
+          <div class="col-item">Flux : vers des activités criminelles</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Le FT doit être évalué <strong>séparément</strong> dans le programme LBA. Les outils de détection classiques du blanchiment peuvent ne pas détecter le FT (petits montants, fonds légaux).</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ M7 ══ -->
+<div class="module-section" id="mod-7">
+  <div class="mod-title m7">Module 7 — Surveillance des transactions</div>
+  <div class="mod-sub">KYC / KYE / KYT, soupçons, délit fiscal</div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m7">Soupçon simple (305ter al.2)</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m7">Soupçon fondé (art. 9 LBA)</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m7">Soupçon simple — 305ter al. 2</div>
+          <div class="col-item"><strong>Droit</strong> de communiquer (facultatif)</div>
+          <div class="col-item">Indices peu caractérisés, doute non dissipé</div>
+          <div class="col-item">Protection légale si communication de bonne foi</div>
+          <div class="col-item">Pas d'obligation</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m7">Soupçon fondé — Art. 9 LBA</div>
+          <div class="col-item"><strong>Obligation</strong> de communiquer au MROS</div>
+          <div class="col-item">Indices concrets et objectifs</div>
+          <div class="col-item">Communication "sans délai"</div>
+          <div class="col-item">Violation = sanction pénale (art. 37 LBA)</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> C'est la distinction la plus importante du cours — et la plus testée à l'examen. L'un est un droit, l'autre une obligation absolue.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m7">KYC</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m7">KYE</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m7">KYT</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m7">KYC — Know Your Customer</div>
+          <div class="col-item">Connaître le <strong>client</strong> — identité, ADE, profil de risque</div>
+          <div class="col-item">Base de toute la relation d'affaires</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m7">KYE — Know Your Employee</div>
+          <div class="col-item">Connaître ses <strong>propres employés</strong></div>
+          <div class="col-item">Vérifier honnêteté et intégrité du personnel</div>
+        </div>
+      </div>
+      <div class="key-diff"><strong>KYT — Know Your Transaction :</strong> Surveiller les <strong>transactions</strong> pour détecter les comportements inhabituels. C'est la surveillance continue (TMS). Les 3 ensemble forment le dispositif complet.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ M8 ══ -->
+<div class="module-section" id="mod-8">
+  <div class="mod-title m8">Module 8 — PEPs et corruption</div>
+  <div class="mod-sub">Définitions, types, corruption active vs passive</div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m8">PEP étranger</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m8">PEP domestique</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m8">PEP org. internationale</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m8">PEP étranger</div>
+          <div class="col-item">Chef d'État, ministre, haut fonctionnaire d'un pays étranger</div>
+          <div class="col-item">Diligences renforcées <strong>toujours</strong></div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m8">PEP domestique (depuis 2016)</div>
+          <div class="col-item">Conseiller fédéral, juge fédéral, officier général suisse…</div>
+          <div class="col-item">Diligences renforcées <strong>depuis la révision 2016</strong> de l'OBA FINMA</div>
+        </div>
+      </div>
+      <div class="key-diff"><strong>PEP organisation internationale :</strong> dirigeants FMI, ONU, Banque mondiale, FIFA… — diligences renforcées. 💡 <strong>Erreur fréquente :</strong> croire que les PEPs domestiques ont un traitement de faveur — depuis 2016 c'est identique.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m8">Corruption active</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m8">Corruption passive</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m8">Corruption active</div>
+          <div class="col-item">Celui qui <strong>donne ou offre</strong> l'avantage</div>
+          <div class="col-item">Ex : l'entreprise qui paie un pot-de-vin</div>
+          <div class="col-item">Art. 322ter CP (publique) / 322octies (privée)</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m8">Corruption passive</div>
+          <div class="col-item">Celui qui <strong>reçoit</strong> l'avantage</div>
+          <div class="col-item">Ex : le fonctionnaire qui accepte le pot-de-vin</div>
+          <div class="col-item">Art. 322quater CP (publique) / 322novies (privée)</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Corruption <strong>publique</strong> (fonctionnaire) = crime préalable au blanchiment. Corruption <strong>privée</strong> (entre entreprises) = délit (sauf si aggravée). À connaître pour identifier les crimes préalables.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m8">LVP (loi sur les valeurs patrimoniales)</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m8">LBA</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m8">Sanctions internationales</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m8">LVP</div>
+          <div class="col-item">Gel des avoirs de personnes liées à des régimes</div>
+          <div class="col-item">Communication obligatoire au SECO</div>
+          <div class="col-item">Indépendante du soupçon de blanchiment</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m8">LBA</div>
+          <div class="col-item">Oblig. de diligence, communication MROS</div>
+          <div class="col-item">Basée sur le <strong>soupçon de blanchiment</strong></div>
+        </div>
+      </div>
+      <div class="key-diff"><strong>Sanctions internationales (OFAC, UE) :</strong> gel d'avoirs de personnes/entités désignées — obligation légale indépendante, parallèle à la LBA. Un PEP peut cumuler les trois régimes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ M9 ══ -->
+<div class="module-section" id="mod-9">
+  <div class="mod-title m9">Module 9 — CDB 20</div>
+  <div class="mod-sub">Convention, formulaires, comptes numérotés</div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m9">CDB 20 (droit privé)</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m9">LBA (loi fédérale)</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m9">CDB 20</div>
+          <div class="col-item"><strong>Convention privée</strong> entre banques membres de l'ASB</div>
+          <div class="col-item">Pas une loi — n'engage que les signataires</div>
+          <div class="col-item">Sanction : amende jusqu'à <strong>CHF 10 millions</strong> par la commission CDB</div>
+          <div class="col-item">En vigueur depuis <strong>1er janvier 2020</strong></div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m9">LBA — Loi fédérale</div>
+          <div class="col-item"><strong>Loi fédérale</strong> — s'applique à tous les IF</div>
+          <div class="col-item">Sanctions pénales (art. 37) et administratives (FINMA)</div>
+          <div class="col-item">S'impose à tous, membres ASB ou non</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> La CDB et la LBA coexistent. Un IF peut violer la CDB sans violer la LBA, et vice-versa — ce sont deux régimes distincts avec leurs propres sanctions.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m9">Compte numéroté</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m9">Compte anonyme</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m9">Compte numéroté ✅ (légal)</div>
+          <div class="col-item">Le numéro remplace le nom dans les communications <strong>externes</strong></div>
+          <div class="col-item">La banque <strong>connaît</strong> l'identité réelle du client</div>
+          <div class="col-item">Toutes les obligations KYC/CDB s'appliquent normalement</div>
+          <div class="col-item">Simple mesure de <strong>discrétion interne</strong></div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m9">Compte anonyme ❌ (interdit)</div>
+          <div class="col-item">Compte dont même la banque ignore l'identité du titulaire</div>
+          <div class="col-item"><strong>Interdit</strong> en Suisse depuis des décennies</div>
+          <div class="col-item">Contraire à la CDB et à la LBA</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> "Le secret bancaire suisse ≠ anonymat." C'est un mythe. La banque sait toujours qui est le client. Le secret bancaire protège vis-à-vis des tiers, pas des autorités.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ M10 ══ -->
+<div class="module-section" id="mod-10">
+  <div class="mod-title m10">Module 10 — Communication au MROS</div>
+  <div class="mod-sub">MROS, goAML, tipping off, blocage</div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m10">MROS (FIU)</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m10">MPC / Ministère public</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m10">MROS — Bureau de communication</div>
+          <div class="col-item">Cellule de <strong>renseignement financier</strong> (FIU)</div>
+          <div class="col-item">Rattaché à <strong>fedpol</strong></div>
+          <div class="col-item"><strong>Reçoit, analyse, filtre</strong> les communications</div>
+          <div class="col-item">Pas de pouvoir d'arrestation ni de poursuite</div>
+          <div class="col-item">Membre du <strong>Groupe Egmont</strong></div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m10">MPC / Ministère public cantonal</div>
+          <div class="col-item"><strong>Autorité de poursuite pénale</strong></div>
+          <div class="col-item">Ouvre les enquêtes pénales</div>
+          <div class="col-item">Peut ordonner arrestation, perquisition, saisie</div>
+          <div class="col-item">Reçoit les transmissions du MROS</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Le MROS est un filtre — il reçoit de l'IF, analyse, et transmet (ou non) aux autorités pénales. Il n'a aucun pouvoir judiciaire ou policier direct.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m10">Obligation de communiquer (art. 9)</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m10">Interdiction de tipping off (art. 10a)</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m10">Art. 9 LBA — Communiquer</div>
+          <div class="col-item"><strong>Obligation</strong> de communiquer au MROS</div>
+          <div class="col-item">Dès que le soupçon est fondé</div>
+          <div class="col-item">"Sans délai" — violation = art. 37 LBA</div>
+          <div class="col-item">Via goAML (depuis 2016)</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m10">Art. 10a LBA — Ne pas informer</div>
+          <div class="col-item"><strong>Interdiction</strong> d'informer le client</div>
+          <div class="col-item">Pas de "tipping off" — même indirectement</div>
+          <div class="col-item">Clôturer un compte = tipping off indirect possible</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Les deux articles se complètent : l'IF DOIT communiquer au MROS et NE DOIT PAS informer le client. Ces deux obligations s'appliquent simultanément.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m10">Blocage art. 10 LBA</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m10">Saisie judiciaire</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m10">Blocage — Art. 10 LBA</div>
+          <div class="col-item">Par l'<strong>IF lui-même</strong> après communication MROS</div>
+          <div class="col-item">Durée maximale : <strong>5 jours ouvrables</strong></div>
+          <div class="col-item">L'IF ne peut pas libérer seul sans autorisation</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m10">Saisie judiciaire</div>
+          <div class="col-item">Ordonnée par les <strong>autorités pénales</strong></div>
+          <div class="col-item">Durée illimitée (tant que l'enquête dure)</div>
+          <div class="col-item">Prend le relais du blocage après les 5 jours</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> Le blocage art. 10 est temporaire (5 jours) — il donne le temps aux autorités d'ordonner une saisie judiciaire formelle si elles veulent maintenir le gel.</div>
+    </div>
+  </div>
+
+  <div class="dist-card" onclick="toggle(this)">
+    <div class="card-question">
+      <div class="concepts">
+        <span class="concept-a m10">goAML (plateforme)</span>
+        <span class="sep">vs</span>
+        <span class="concept-b m10">MROS (organe)</span>
+      </div>
+      <span class="reveal-hint">👆 Révéler</span>
+    </div>
+    <div class="card-answer">
+      <div class="answer-cols">
+        <div class="col-a">
+          <div class="col-header m10">goAML</div>
+          <div class="col-item"><strong>Plateforme informatique</strong> développée par l'ONUDC</div>
+          <div class="col-item">Outil de <strong>soumission électronique</strong> des communications</div>
+          <div class="col-item">Obligatoire depuis 2016 pour les IF en Suisse</div>
+          <div class="col-item">Standardise et sécurise les transmissions</div>
+        </div>
+        <div class="col-b">
+          <div class="col-header m10">MROS</div>
+          <div class="col-item"><strong>L'organe</strong> — les personnes et l'institution</div>
+          <div class="col-item">Reçoit via goAML, analyse, décide</div>
+          <div class="col-item">Rattaché à fedpol (Office fédéral de la police)</div>
+        </div>
+      </div>
+      <div class="key-diff">💡 <strong>Clé :</strong> goAML est l'outil, le MROS est l'institution. "Je communique au MROS via goAML" — les deux termes ne sont pas interchangeables.</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<div class="progress-bar">
+  <span id="prog-text">0 / 0 cartes révélées</span>
+  <div class="prog-fill-wrap"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+</div>
+
+<script>
+const COLORS = {1:'#C0392B',2:'#7B241C',3:'#154360',4:'#145A32',5:'#6C3483',
+               6:'#935116',7:'#0E6655',8:'#784212',9:'#117A65',10:'#212F3D'};
+let currentMod = 1;
+
+function showMod(n) {
+  currentMod = n;
+  document.querySelectorAll('.module-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.mod-btn').forEach((b,i) => {
+    b.classList.toggle('active', i === n-1);
+    b.style.opacity = i === n-1 ? '1' : '0.45';
+  });
+  document.getElementById('mod-'+n).classList.add('active');
+  updateProgress();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function toggle(card) {
+  card.classList.toggle('open');
+  updateProgress();
+}
+
+function updateProgress() {
+  const all   = document.querySelectorAll('.dist-card');
+  const open  = document.querySelectorAll('.dist-card.open');
+  const pct   = all.length ? Math.round(open.length/all.length*100) : 0;
+  document.getElementById('prog-text').textContent = `${open.length} / ${all.length} cartes révélées`;
+  document.getElementById('prog-fill').style.width = pct+'%';
+}
+
+// Ajouter badge de comptage
+document.querySelectorAll('.module-section').forEach(sec => {
+  const n = sec.querySelectorAll('.dist-card').length;
+  const title = sec.querySelector('.mod-title');
+  if(title) title.innerHTML += `<span class="count-badge">${n} distinctions</span>`;
+});
+updateProgress();
+</script>
+</body>
+</html>
